@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbooth Sampah Pintar</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background:
+                radial-gradient(1200px 600px at 20% 0%, rgba(76, 175, 80, 0.28), transparent 60%),
+                radial-gradient(900px 500px at 90% 30%, rgba(34, 197, 94, 0.22), transparent 65%),
+                linear-gradient(135deg, #0f2d1b, #0b2417);
+            color: #0f172a;
+            min-height: 100dvh;
+            overflow: auto;
+        }
+
+        .container {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 18px 16px 26px;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        header {
+            text-align: center;
+            padding: 18px 0 6px;
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        header h1 {
+            font-size: clamp(1.65rem, 2.4vw, 2.45rem);
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.2px;
+        }
+
+        header p {
+            font-size: clamp(0.95rem, 1.2vw, 1.15rem);
+            max-width: 840px;
+            margin: 0 auto;
+            opacity: 0.92;
+            line-height: 1.55;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 58px;
+            height: 58px;
+            border-radius: 16px;
+            margin: 0 auto 12px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(10px);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1.7fr 1fr;
+            gap: 18px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .chat-container {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 18px;
+            box-shadow: 0 12px 34px rgba(0, 0, 0, 0.26);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .chat-header {
+            background:
+                linear-gradient(135deg, rgba(76, 175, 80, 0.98), rgba(34, 197, 94, 0.94));
+            color: rgba(255, 255, 255, 0.98);
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .chat-header .title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-header i {
+            font-size: 1.4rem;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
+        }
+
+        .dot.offline {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 18px 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: calc(100dvh - 360px);
+            min-height: 0;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 14px;
+            border-radius: 16px;
+            line-height: 1.5;
+            position: relative;
+            animation: fadeIn 0.25s ease;
+            box-shadow: 0 10px 18px rgba(2, 6, 23, 0.08);
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background: rgba(248, 250, 252, 0.95);
+            border: 1px solid rgba(15, 23, 42, 0.06);
+            border-top-left-radius: 8px;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background:
+                linear-gradient(135deg, rgba(16, 185, 129, 1), rgba(34, 197, 94, 0.95));
+            color: rgba(255, 255, 255, 0.98);
+            border-top-right-radius: 8px;
+        }
+
+        .meta {
+            margin-top: 8px;
+            font-size: 0.82rem;
+            opacity: 0.85;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .meta-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 9px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.06);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+            padding: 12px 12px;
+            border-top: 1px solid rgba(15, 23, 42, 0.08);
+            background: rgba(248, 250, 252, 0.92);
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 14px;
+            border: 1px solid rgba(15, 23, 42, 0.14);
+            border-radius: 14px;
+            outline: none;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.92);
+        }
+
+        .chat-input input:focus {
+            border-color: rgba(34, 197, 94, 0.55);
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18);
+        }
+
+        .chat-input button {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 1), rgba(34, 197, 94, 0.95));
+            color: white;
+            border: none;
+            border-radius: 14px;
+            width: 52px;
+            height: 48px;
+            cursor: pointer;
+            transition: background 0.3s;
+            box-shadow: 0 12px 18px rgba(16, 185, 129, 0.26);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-input button:hover {
+            background: linear-gradient(135deg, rgba(5, 150, 105, 1), rgba(22, 163, 74, 0.98));
+        }
+
+        .chat-input button:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .info-panel {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 18px;
+            box-shadow: 0 12px 34px rgba(0, 0, 0, 0.26);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            min-height: 0;
+        }
+
+        .info-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(34, 197, 94, 1);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .stat-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 14px;
+            background: rgba(15, 23, 42, 0.04);
+            border: 1px solid rgba(15, 23, 42, 0.06);
+        }
+
+        .stat-pill i {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: rgba(34, 197, 94, 0.12);
+            border: 1px solid rgba(34, 197, 94, 0.18);
+            color: rgba(21, 128, 61, 1);
+        }
+
+        .stat-label {
+            font-size: 0.82rem;
+            color: rgba(15, 23, 42, 0.7);
+            line-height: 1.1;
+        }
+
+        .stat-value {
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: rgba(15, 23, 42, 0.92);
+            line-height: 1.2;
+        }
+
+        .info-content {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .below-section {
+            margin-top: 16px;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 18px;
+            box-shadow: 0 12px 34px rgba(0, 0, 0, 0.26);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            padding: 16px;
+        }
+
+        .below-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .below-header h2 {
+            margin: 0;
+            color: rgba(34, 197, 94, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.15rem;
+        }
+
+        .below-header p {
+            margin: 0;
+            color: rgba(15, 23, 42, 0.7);
+            font-size: 0.92rem;
+            line-height: 1.4;
+        }
+
+        .below-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .below-content .info-card {
+            margin-bottom: 0;
+        }
+
+        .below-content .suggestions {
+            margin-top: 0;
+        }
+
+        .settings {
+            display: grid;
+            gap: 10px;
+            padding: 12px;
+            border-radius: 14px;
+            background: rgba(15, 23, 42, 0.04);
+            border: 1px solid rgba(15, 23, 42, 0.06);
+        }
+
+        .field {
+            display: grid;
+            gap: 6px;
+        }
+
+        .field label {
+            font-size: 0.9rem;
+            color: rgba(15, 23, 42, 0.85);
+        }
+
+        .field select,
+        .field textarea {
+            width: 100%;
+            border: 1px solid rgba(15, 23, 42, 0.14);
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 0.95rem;
+            outline: none;
+            background: rgba(255, 255, 255, 0.92);
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .toggle-row .label {
+            display: grid;
+            gap: 3px;
+        }
+
+        .toggle-row .label b {
+            font-size: 0.95rem;
+            color: rgba(15, 23, 42, 0.92);
+        }
+
+        .toggle-row .label span {
+            font-size: 0.82rem;
+            color: rgba(15, 23, 42, 0.7);
+            line-height: 1.2;
+        }
+
+        .switch {
+            position: relative;
+            width: 48px;
+            height: 28px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.14);
+            cursor: pointer;
+            flex: 0 0 auto;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .switch .knob {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 22px;
+            height: 22px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 10px 18px rgba(2, 6, 23, 0.18);
+            transition: transform 0.18s ease, background 0.18s ease;
+        }
+
+        .switch input:checked + .knob {
+            transform: translateX(20px);
+            background: rgba(255, 255, 255, 0.98);
+        }
+
+        .switch.on {
+            background: rgba(34, 197, 94, 0.7);
+            border: 1px solid rgba(34, 197, 94, 0.5);
+        }
+
+        .compare-settings {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .compare-settings.hidden {
+            display: none;
+        }
+
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .compare-card {
+            border-radius: 14px;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            background: rgba(255, 255, 255, 0.76);
+            padding: 12px 12px;
+        }
+
+        .compare-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .compare-model {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 800;
+            color: rgba(15, 23, 42, 0.92);
+            font-size: 0.92rem;
+        }
+
+        .compare-score {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 9px;
+            border-radius: 999px;
+            background: rgba(34, 197, 94, 0.10);
+            border: 1px solid rgba(34, 197, 94, 0.22);
+            color: rgba(15, 23, 42, 0.86);
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+
+        .compare-answer {
+            color: rgba(51, 65, 85, 0.96);
+            line-height: 1.6;
+            font-size: 0.98rem;
+        }
+
+        .compare-match {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(15, 23, 42, 0.14);
+            color: rgba(15, 23, 42, 0.72);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .field textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .field select:focus,
+        .field textarea:focus {
+            border-color: rgba(34, 197, 94, 0.55);
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18);
+        }
+
+        .info-card {
+            background: rgba(248, 250, 252, 0.92);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(15, 23, 42, 0.06);
+            box-shadow: 0 10px 18px rgba(2, 6, 23, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 5px;
+            background: linear-gradient(180deg, rgba(34, 197, 94, 1), rgba(16, 185, 129, 0.9));
+        }
+
+        .info-card h3 {
+            color: #2c7744;
+            margin-bottom: 8px;
+            padding-left: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-card p {
+            color: #555;
+            line-height: 1.5;
+            padding-left: 6px;
+        }
+
+        .info-list {
+            padding-left: 26px;
+            color: rgba(51, 65, 85, 0.92);
+            line-height: 1.6;
+        }
+
+        .info-list li {
+            margin: 6px 0;
+        }
+
+        .step-list {
+            padding-left: 26px;
+            color: rgba(51, 65, 85, 0.92);
+            line-height: 1.6;
+        }
+
+        .step-list li {
+            margin: 8px 0;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding-left: 6px;
+            margin-top: 8px;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 999px;
+            background: rgba(34, 197, 94, 0.10);
+            border: 1px solid rgba(34, 197, 94, 0.28);
+            color: rgba(15, 23, 42, 0.86);
+            font-size: 0.9rem;
+            user-select: none;
+        }
+
+        .faq details {
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+            padding: 10px 12px;
+            margin-top: 10px;
+        }
+
+        .faq summary {
+            cursor: pointer;
+            font-weight: 700;
+            color: rgba(15, 23, 42, 0.92);
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .faq summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .faq summary .chev {
+            opacity: 0.75;
+        }
+
+        .faq details[open] summary .chev {
+            transform: rotate(180deg);
+        }
+
+        .faq .answer {
+            margin-top: 8px;
+            color: rgba(51, 65, 85, 0.92);
+            line-height: 1.6;
+        }
+
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .suggestion {
+            background: rgba(34, 197, 94, 0.10);
+            border: 1px solid rgba(34, 197, 94, 0.35);
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .suggestion:hover {
+            background: rgba(34, 197, 94, 0.95);
+            color: white;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px 0 0;
+            color: rgba(255, 255, 255, 0.86);
+            margin-top: 2px;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+
+            .chat-messages {
+                max-height: calc(100dvh - 420px);
+            }
+
+            .compare-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .compare-settings {
+                grid-template-columns: 1fr;
+            }
+
+            .below-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (min-width: 900px) {
+            .chat-messages {
+                max-height: none;
+            }
+
+            .chat-container {
+                height: min(72dvh, 720px);
+            }
+
+            .info-panel {
+                height: auto;
+                align-self: start;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .chat-input {
+                padding: 10px;
+            }
+
+            .chat-input button {
+                width: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-recycle"></i>
+            </div>
+            <h1>Chatbooth Sampah Pintar</h1>
+            <p>Tanya apapun tentang pengelolaan sampah, pemilahan, daur ulang, dan lingkungan</p>
+        </header>
+
+        <div class="main-content">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <div class="title">
+                        <i class="fas fa-robot"></i>
+                        <h2>Asisten Sampah Pintar</h2>
+                    </div>
+                    <div class="status-pill" id="statusPill">
+                        <span class="dot offline" id="statusDot"></span>
+                        <span id="statusText">Backend: belum dicek</span>
+                    </div>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message bot-message">
+                        Halo! Saya Asisten Sampah Pintar. Saya siap membantu Anda dengan pertanyaan seputar pengelolaan sampah, pemilahan, daur ulang, dan lingkungan. Apa yang ingin Anda ketahui?
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="userInput" placeholder="Ketik pertanyaan Anda di sini...">
+                    <button id="sendButton" disabled><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class="info-header">
+                    <i class="fas fa-lightbulb"></i>
+                    <h2>Informasi Penting</h2>
+                </div>
+                <div class="stats">
+                    <div class="stat-pill">
+                        <i class="fa-solid fa-brain"></i>
+                        <div>
+                            <div class="stat-label">Model aktif</div>
+                            <div class="stat-value" id="activeModel">-</div>
+                        </div>
+                    </div>
+                    <div class="stat-pill">
+                        <i class="fa-solid fa-comments"></i>
+                        <div>
+                            <div class="stat-label">Pertanyaan terkirim</div>
+                            <div class="stat-value" id="chatCount">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings">
+                    <div class="toggle-row" id="compareRow">
+                        <div class="label">
+                            <b>Bandingkan 2 Model</b>
+                            <span>Sekali tanya langsung keluar IndoBERT vs IndoRoBERTa</span>
+                        </div>
+                        <label class="switch" id="compareSwitch">
+                            <input type="checkbox" id="compareToggle">
+                            <span class="knob"></span>
+                        </label>
+                    </div>
+                    <div class="field">
+                        <label for="modelSelect">Model</label>
+                        <select id="modelSelect">
+                            <option value="indoroberta">IndoRoBERTa</option>
+                            <option value="indobert">IndoBERT</option>
+                            <option value="bm25">BM25 (cepat)</option>
+                        </select>
+                    </div>
+                   
+                    <div class="compare-settings hidden" id="compareSettings">
+                        <div class="field">
+                            <label for="modelASelect">Model A</label>
+                            <select id="modelASelect">
+                                <option value="indoroberta">IndoRoBERTa</option>
+                                <option value="indobert">IndoBERT</option>
+                                <option value="bm25">BM25</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="modelBSelect">Model B</label>
+                            <select id="modelBSelect">
+                                <option value="indobert">IndoBERT</option>
+                                <option value="indoroberta">IndoRoBERTa</option>
+                                <option value="bm25">BM25</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="below-section">
+            <div class="below-header">
+                <h2><i class="fa-solid fa-book-open"></i> Panduan & Contoh</h2>
+                <p>Materi ringkas untuk edukasi dan contoh pertanyaan cepat.</p>
+            </div>
+            <div class="below-content">
+                <div class="info-card">
+                    <h3><i class="fa-solid fa-layer-group"></i> Pemilahan Sampah</h3>
+                    <ul class="info-list">
+                        <li>Pisahkan sejak sumbernya: organik, anorganik, dan B3.</li>
+                        <li>Cuci cepat kemasan plastik/kaleng sebelum dikumpulkan.</li>
+                        <li>Gunakan tempat sampah berbeda warna agar mudah dibiasakan.</li>
+                    </ul>
+                </div>
+                <div class="info-card">
+                    <h3><i class="fa-solid fa-arrows-rotate"></i> Metode 3R</h3>
+                    <ul class="info-list">
+                        <li><b>Reduce</b>: kurangi barang sekali pakai (kantong, sedotan, gelas).</li>
+                        <li><b>Reuse</b>: pakai ulang wadah, botol minum, tas belanja.</li>
+                        <li><b>Recycle</b>: pilah & setorkan ke bank sampah/pengepul.</li>
+                    </ul>
+                </div>
+                <div class="info-card">
+                    <h3><i class="fa-solid fa-seedling"></i> Kompos Organik</h3>
+                    <ol class="step-list">
+                        <li>Kumpulkan sisa sayur/buah/daun kering (hindari minyak & tulang).</li>
+                        <li>Campur dengan tanah/sekam, jaga lembap (tidak becek).</li>
+                        <li>Aduk 2–3 hari sekali. Dalam beberapa minggu jadi kompos.</li>
+                    </ol>
+                    <div class="tags">
+                        <span class="tag"><i class="fa-solid fa-leaf"></i> Organik</span>
+                        <span class="tag"><i class="fa-solid fa-bottle-water"></i> Plastik</span>
+                        <span class="tag"><i class="fa-solid fa-mug-hot"></i> Kertas</span>
+                        <span class="tag"><i class="fa-solid fa-bolt"></i> B3</span>
+                    </div>
+                </div>
+                <div class="info-card faq">
+                    <h3><i class="fa-solid fa-circle-question"></i> FAQ Cepat</h3>
+                    <details>
+                        <summary>
+                            Kalau jawaban tidak sesuai?
+                            <i class="fa-solid fa-chevron-down chev"></i>
+                        </summary>
+                        <div class="answer">Coba tambahkan konteks (misal lokasi/kejadian), atau ganti model ke IndoRoBERTa. Kamu juga bisa ketik ulang dengan kalimat lebih spesifik.</div>
+                    </details>
+                    <details>
+                        <summary>
+                            Bedanya IndoBERT vs IndoRoBERTa?
+                            <i class="fa-solid fa-chevron-down chev"></i>
+                        </summary>
+                        <div class="answer">Keduanya model bahasa Indonesia. IndoRoBERTa sering bagus untuk pencocokan teks, IndoBERT juga stabil. Kamu bisa bandingkan dari nilai score dan kecocokan pertanyaan.</div>
+                    </details>
+                    <details>
+                        <summary>
+                            Kenapa perlu isi “Konteks”?
+                            <i class="fa-solid fa-chevron-down chev"></i>
+                        </summary>
+                        <div class="answer">Konteks membantu sistem memahami situasi (misal “di sekolah”, “di taman kota”), jadi jawaban lebih relevan.</div>
+                    </details>
+                </div>
+                <div class="suggestions">
+                    <div class="suggestion" data-question="Mengapa kita harus memilah sampah di sekolah?">Pemilahan sampah di sekolah</div>
+                    <div class="suggestion" data-question="Bagaimana cara membuat kompos dari sisa makanan?">Cara membuat kompos</div>
+                    <div class="suggestion" data-question="Apa dampaknya jika kita tidak memilah sampah plastik?">Dampak tidak memilah sampah plastik</div>
+                    <div class="suggestion" data-question="Apa itu metode 3R?">Metode 3R</div>
+                </div>
+            </div>
+        </div>
+        <footer>
+            <p>Chatbooth Sampah Pintar &copy; 2026 - Edukasi Pengelolaan Sampah Berkelanjutan</p>
+        </footer>
+    </div>
+
+    <script>
+        // Dataset dari file JSON yang diberikan
+        const dataset = [
+            {
+                "konteks": "Seorang pengguna sedang berbicara dengan chatbooth tentang pentingnya menjaga kebersihan lingkungan di sekolah.",
+                "pertanyaan": "Mengapa kita harus memilah sampah di sekolah?",
+                "jawaban": "Karena dengan memilah sampah, sekolah menjadi lebih bersih, sampah organik bisa dijadikan kompos, dan sampah anorganik bisa didaur ulang. Ini juga mengajarkan kebiasaan baik kepada siswa."
+            },
+            {
+                "konteks": "Pengguna ingin tahu cara sederhana mengolah sampah rumah tangga.",
+                "pertanyaan": "Bagaimana cara membuat kompos dari sisa makanan?",
+                "jawaban": "Pisahkan sisa makanan seperti sayur dan buah, campur dengan tanah dan sedikit air, lalu simpan di wadah tertutup selama beberapa minggu hingga menjadi kompos alami."
+            },
+            {
+                "konteks": "Percakapan terjadi di taman kota yang penuh sampah plastik.",
+                "pertanyaan": "Apa dampaknya jika kita tidak memilah sampah plastik?",
+                "jawaban": "Sampah plastik yang tidak dipilah bisa mencemari tanah dan air, sulit terurai, serta membahayakan hewan. Memilahnya membantu proses daur ulang."
+            },
+            {
+                "konteks": "memilah sampah berdasarkan jenisnya seperti sampah organik anorganik dan bahan berbahaya kita dapat mengurangi jumlah sampah yang dibuang ke tempat pembuangan",
+                "pertanyaan": "Fungsi utama dari pemilahan ini adalah untuk membantu kita dalam mengelola sampah",
+                "jawaban": "Sampah organik dapat diolah menjadi kompos yang bermanfaat bagi tanaman sementara sampah anorganik seperti plastik dan kertas bisa didaur ulang menjadi produk baru yang bernilai ekonomi"
+            },
+            {
+                "konteks": "sifat dan bahan penyusunnya Sampah organik biasanya diolah menjadi kompos atau pupuk sedangkan sampah anorganik seperti plastik  kaca dan logam dapat dipilah untuk didaur ulang sampah berbahaya seperti baterai dan limbah medis harus ditangani secara khusus agar tidak mencemari lingkungan",
+                "pertanyaan": "Tiap jenis sampah memiliki alur penanganan yang berbeda",
+                "jawaban": "Sampah yang kita hasilkan setiap hari tidak semuanya dapat ditangani dengan cara yang sama. Oleh karena itu, penting untuk mengetahui perbedaan dalam pengelolaannya"
+            },
+            {
+                "konteks": "Reduce (mengurangi) Reuse (menggunakan kembali) Recycle (mendaur ulang)",
+                "pertanyaan": "Apa kepanjangan dari metode 3R dalam pengelolaan sampah",
+                "jawaban": "Metode 3R adalah langkah sederhana yang berdampak besar untuk mengelola sampah sejak dari sumbernya"
+            }
+        ];
+
+        // Elemen DOM
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+        const suggestions = document.querySelectorAll('.suggestion');
+        const modelSelect = document.getElementById('modelSelect');
+        const contextInput = document.getElementById('contextInput');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const activeModel = document.getElementById('activeModel');
+        const chatCount = document.getElementById('chatCount');
+        const compareToggle = document.getElementById('compareToggle');
+        const compareSwitch = document.getElementById('compareSwitch');
+        const compareSettings = document.getElementById('compareSettings');
+        const modelASelect = document.getElementById('modelASelect');
+        const modelBSelect = document.getElementById('modelBSelect');
+
+        let isSending = false;
+        let chatTurns = 0;
+
+        // Tambahkan event listener untuk tombol kirim
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        userInput.addEventListener('input', function() {
+            sendButton.disabled = isSending || userInput.value.trim() === '';
+        });
+
+        compareToggle.addEventListener('change', function() {
+            const enabled = !!compareToggle.checked;
+            compareSettings.classList.toggle('hidden', !enabled);
+            compareSwitch.classList.toggle('on', enabled);
+            modelSelect.disabled = enabled;
+            activeModel.textContent = enabled ? `${modelASelect.value} vs ${modelBSelect.value}` : (modelSelect.value || '-');
+        });
+
+        modelSelect.addEventListener('change', function() {
+            if (!compareToggle.checked) {
+                activeModel.textContent = modelSelect.value || '-';
+            }
+        });
+
+        modelASelect.addEventListener('change', function() {
+            if (compareToggle.checked) {
+                activeModel.textContent = `${modelASelect.value} vs ${modelBSelect.value}`;
+            }
+        });
+
+        modelBSelect.addEventListener('change', function() {
+            if (compareToggle.checked) {
+                activeModel.textContent = `${modelASelect.value} vs ${modelBSelect.value}`;
+            }
+        });
+
+        // Tambahkan event listener untuk saran pertanyaan
+        suggestions.forEach(suggestion => {
+            suggestion.addEventListener('click', function() {
+                const question = this.getAttribute('data-question');
+                userInput.value = question;
+                sendButton.disabled = isSending || userInput.value.trim() === '';
+                sendMessage();
+            });
+        });
+
+        // Fungsi untuk mengirim pesan
+        async function postAsk(payload, retries = 1) {
+            let last = { resp: null, data: null };
+
+            for (let attempt = 0; attempt <= retries; attempt++) {
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), 20000);
+                try {
+                    const resp = await fetch('ask.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+                        cache: 'no-store',
+                        body: JSON.stringify(payload),
+                        signal: controller.signal,
+                    });
+
+                    const text = await resp.text();
+                    let data = null;
+                    try {
+                        data = JSON.parse(text);
+                    } catch (e) {
+                        data = null;
+                    }
+
+                    last = { resp, data };
+                    if (resp.ok && data && typeof data.answer === 'string') {
+                        return { ok: true, data };
+                    }
+                } catch (e) {
+                    last = { resp: null, data: null };
+                } finally {
+                    clearTimeout(timer);
+                }
+            }
+
+            return { ok: false, data: last.data };
+        }
+
+        function safeRemoveLoading(node) {
+            if (node && node.parentNode === chatMessages) {
+                chatMessages.removeChild(node);
+            }
+        }
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (message === '' || isSending) return;
+
+            // Tambahkan pesan pengguna ke chat
+            addMessage(message, 'user');
+            chatTurns += 1;
+            updateChatCount();
+            userInput.value = '';
+            sendButton.disabled = true;
+            isSending = true;
+
+            // Tampilkan indikator loading
+            const loadingMessage = addMessage('Mengetik...', 'bot', true);
+            
+            try {
+                const context = (contextInput && typeof contextInput.value === 'string') ? contextInput.value.trim() : '';
+                const compareEnabled = !!compareToggle.checked;
+
+                if (compareEnabled) {
+                    const modelA = modelASelect.value;
+                    const modelB = modelBSelect.value;
+
+                    const [a, b] = await Promise.all([
+                        postAsk(
+                            {
+                                question: message,
+                                context: context === '' ? null : context,
+                                model: modelA,
+                            },
+                            1
+                        ),
+                        postAsk(
+                            {
+                                question: message,
+                                context: context === '' ? null : context,
+                                model: modelB,
+                            },
+                            1
+                        ),
+                    ]);
+
+                    safeRemoveLoading(loadingMessage);
+
+                    if (!a.ok || !b.ok) {
+                        const fallback = findBestAnswer(message);
+                        addMessage(fallback, 'bot');
+                        setStatus(false, 'Backend: fallback lokal', 'lokal');
+                    } else {
+                        addCompareMessage(a.data, b.data);
+                        setStatus(true, 'Backend: OK • compare', `${a.data.model || modelA} vs ${b.data.model || modelB}`);
+                    }
+                } else {
+                    const model = modelSelect.value;
+
+                    const result = await postAsk(
+                        {
+                            question: message,
+                            context: context === '' ? null : context,
+                            model: model,
+                        },
+                        1
+                    );
+
+                    safeRemoveLoading(loadingMessage);
+
+                    if (!result.ok || !result.data || typeof result.data.answer !== 'string') {
+                        const fallback = findBestAnswer(message);
+                        addMessage(fallback, 'bot');
+                        setStatus(false, 'Backend: fallback lokal', 'lokal');
+                    } else {
+                        addMessage(result.data.answer, 'bot', false, result.data);
+                        setStatus(true, `Backend: OK • ${result.data.model || model}`, result.data.model || model);
+                    }
+                }
+            } catch (err) {
+                safeRemoveLoading(loadingMessage);
+                const fallback = findBestAnswer(message);
+                addMessage(fallback, 'bot');
+                setStatus(false, 'Backend: offline (fallback lokal)', 'lokal');
+            } finally {
+                isSending = false;
+                sendButton.disabled = userInput.value.trim() === '';
+            }
+        }
+
+        function addCompareMessage(a, b) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', 'bot-message');
+
+            const wrap = document.createElement('div');
+            wrap.classList.add('compare-grid');
+
+            wrap.appendChild(buildCompareCard(a));
+            wrap.appendChild(buildCompareCard(b));
+
+            messageDiv.appendChild(wrap);
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return messageDiv;
+        }
+
+        function buildCompareCard(meta) {
+            const card = document.createElement('div');
+            card.classList.add('compare-card');
+
+            const head = document.createElement('div');
+            head.classList.add('compare-head');
+
+            const model = document.createElement('div');
+            model.classList.add('compare-model');
+            model.innerHTML = '<i class="fa-solid fa-brain"></i> ' + escapeHtml((meta && meta.model) ? meta.model : '-');
+
+            const score = document.createElement('div');
+            score.classList.add('compare-score');
+            const s = (meta && typeof meta.score === 'number') ? meta.score : null;
+            score.innerHTML = '<i class="fa-solid fa-chart-line"></i> ' + escapeHtml(s === null ? '-' : s.toFixed(3));
+
+            head.appendChild(model);
+            head.appendChild(score);
+
+            const ans = document.createElement('div');
+            ans.classList.add('compare-answer');
+            ans.textContent = (meta && typeof meta.answer === 'string') ? meta.answer : '';
+
+            card.appendChild(head);
+            card.appendChild(ans);
+
+            if (meta && typeof meta.matched_question === 'string' && meta.matched_question.trim() !== '') {
+                const match = document.createElement('div');
+                match.classList.add('compare-match');
+                match.innerHTML = '<b>Matched:</b> ' + escapeHtml(meta.matched_question);
+                card.appendChild(match);
+            }
+
+            return card;
+        }
+
+        // Fungsi untuk menambahkan pesan ke chat
+        function addMessage(text, sender, isTyping = false, meta = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            
+            if (sender === 'user') {
+                messageDiv.classList.add('user-message');
+            } else {
+                messageDiv.classList.add('bot-message');
+                if (isTyping) {
+                    const typingIndicator = document.createElement('div');
+                    typingIndicator.classList.add('loading');
+                    messageDiv.appendChild(typingIndicator);
+                }
+            }
+            
+            if (!isTyping) {
+                messageDiv.textContent = text;
+            }
+            
+            if (!isTyping && sender === 'bot' && meta && typeof meta === 'object') {
+                const metaDiv = document.createElement('div');
+                metaDiv.classList.add('meta');
+
+                if (typeof meta.model === 'string' && meta.model.trim() !== '') {
+                    const chip = document.createElement('span');
+                    chip.classList.add('meta-chip');
+                    chip.innerHTML = '<i class="fas fa-brain"></i> ' + escapeHtml(meta.model);
+                    metaDiv.appendChild(chip);
+                }
+
+                if (typeof meta.score === 'number') {
+                    const chip = document.createElement('span');
+                    chip.classList.add('meta-chip');
+                    chip.innerHTML = '<i class="fas fa-chart-line"></i> ' + escapeHtml(meta.score.toFixed(3));
+                    metaDiv.appendChild(chip);
+                }
+
+                if (typeof meta.matched_question === 'string' && meta.matched_question.trim() !== '') {
+                    const chip = document.createElement('span');
+                    chip.classList.add('meta-chip');
+                    chip.innerHTML = '<i class="fas fa-link"></i> ' + escapeHtml(meta.matched_question);
+                    metaDiv.appendChild(chip);
+                }
+
+                if (metaDiv.childNodes.length > 0) {
+                    messageDiv.appendChild(metaDiv);
+                }
+            }
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            return messageDiv;
+        }
+
+        // Fungsi sederhana untuk mencari jawaban terbaik
+        function findBestAnswer(question) {
+            // Normalisasi pertanyaan
+            const normalizedQuestion = question.toLowerCase().trim();
+            
+            // Cari pertanyaan yang paling cocok
+            let bestMatch = null;
+            let maxScore = 0;
+            
+            for (const item of dataset) {
+                let score = 0;
+                const normalizedItemQuestion = item.pertanyaan.toLowerCase();
+                
+                // Pencocokan sederhana berdasarkan kata kunci
+                const questionWords = normalizedQuestion.split(' ');
+                const itemWords = normalizedItemQuestion.split(' ');
+                
+                for (const qWord of questionWords) {
+                    for (const iWord of itemWords) {
+                        if (qWord === iWord && qWord.length > 3) {
+                            score += 1;
+                        }
+                    }
+                }
+                
+                // Jika pertanyaan mengandung kata kunci yang sama
+                if (normalizedQuestion.includes('pilah') && normalizedItemQuestion.includes('pilah')) {
+                    score += 2;
+                }
+                if (normalizedQuestion.includes('kompos') && normalizedItemQuestion.includes('kompos')) {
+                    score += 2;
+                }
+                if (normalizedQuestion.includes('3r') && normalizedItemQuestion.includes('3r')) {
+                    score += 2;
+                }
+                if (normalizedQuestion.includes('organik') && normalizedItemQuestion.includes('organik')) {
+                    score += 2;
+                }
+                if (normalizedQuestion.includes('daur ulang') && normalizedItemQuestion.includes('daur ulang')) {
+                    score += 2;
+                }
+                
+                if (score > maxScore) {
+                    maxScore = score;
+                    bestMatch = item;
+                }
+            }
+            
+            // Jika ditemukan kecocokan yang cukup baik
+            if (bestMatch && maxScore > 0) {
+                return bestMatch.jawaban;
+            }
+            
+            // Jika tidak ditemukan jawaban yang cocok
+            return "Maaf, saya belum memahami pertanyaan Anda. Coba tanyakan tentang pemilahan sampah, daur ulang, kompos, atau metode 3R.";
+        }
+
+        function setStatus(isOnline, text, modelKey) {
+            statusDot.classList.toggle('offline', !isOnline);
+            statusText.textContent = text;
+            if (typeof modelKey === 'string' && modelKey.trim() !== '') {
+                activeModel.textContent = modelKey;
+            } else {
+                activeModel.textContent = '-';
+            }
+        }
+
+        function updateChatCount() {
+            chatCount.textContent = String(chatTurns);
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        (async function init() {
+            try {
+                const resp = await fetch('ask.php?health=1', { cache: 'no-store' });
+                const data = await resp.json();
+                if (resp.ok && data && data.status === 'ok') {
+                    setStatus(true, `Backend: OK • ${modelSelect.value}`, modelSelect.value);
+                } else {
+                    setStatus(false, 'Backend: fallback lokal', 'lokal');
+                }
+            } catch (e) {
+                setStatus(false, 'Backend: offline', '-');
+            }
+
+            sendButton.disabled = userInput.value.trim() === '';
+            updateChatCount();
+        })();
+    </script>
+</body>
+</html>

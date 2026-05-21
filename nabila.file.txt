@@ -1,0 +1,76 @@
+from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
+import json
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+from transformers import AutoTokenizer, AutoModel
+import torch
+
+app = Flask(__name__)
+CORS(app)
+
+# Load IndoBERT
+model_name = "indobenchmark/indobert-base-p2"
+try:
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModel.from_pretrained(model_name)
+    model_loaded = True
+except Exception as e:
+    print(f"Error loading model: {e}")
+    model_loaded = False
+    tokenizer = None
+    model = None
+
+# Load dataset
+with open("dataset_nabila.json", "r", encoding="utf-8") as f:
+    dataset = json.load(f)
+
+questions = [item["pertanyaan"] for item in dataset]
+answers = [item["jawaban"] for item in dataset]
+
+# Generate embeddings
+def get_embedding(text):
+    if not model_loaded:
+        raise Exception("Model not loaded")
+    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=256)
+    with torch.no_grad():
+        outputs = model(**inputs)
+    return outputs.last_hidden_state[:, 0, :].cpu().numpy()
+
+if model_loaded:
+    question_embeddings = np.vstack([get_embedding(q) for q in questions])
+else:
+    question_embeddings = None
+        
+# Find best answer
+def find_best_answer(user_question, threshold=0.3):
+    user_emb = get_embedding(user_question)
+    sims = cosine_similarity(user_emb, question_embeddings)
+    best_idx = np.argmax(sims)
+    best_score = sims[0][best_idx]
+
+    if best_score >= threshold:
+        return answers[best_idx], round(best_score, 4)
+    else:
+        return "Maaf, saya belum memahami pertanyaan Anda. Coba gunakan kata lain.", round(best_score, 4)
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+@app.route("/api/chat", methods=["POST"])
+def chat():
+    if not model_loaded:
+        return jsonify({"response": "Model tidak dapat dimuat. Periksa koneksi internet.", "similarity": 0.0})
+    data = request.get_json()
+    user_message = data.get("message", "").strip()
+    if not user_message:
+        return jsonify({"response": "Pertanyaan tidak boleh kosong", "similarity": 0.0})
+    try:
+        reply, score = find_best_answer(user_message)
+        return jsonify({"response": reply, "similarity": float(score)})
+    except Exception as e:
+        return jsonify({"response": f"Error: {str(e)}", "similarity": 0.0})
+        
+if __name__ == "__main__":
+    app.run(debug=True)
