@@ -1,2 +1,2 @@
 # sampah-edukasi
-web
+
